@@ -25,10 +25,25 @@
       <a href="#pricing">요금제</a>
       <a href="#about">소개</a>
     </nav>
-    <div class="header-actions">
-      <button class="btn btn-quiet" id="loginBtn">Google 로그인</button>
-      <a class="btn btn-primary" href="#workspace">무료로 시작하기</a>
+    <div class="account-area">
+  <button class="btn btn-quiet" id="loginBtn">Google 로그인</button>
+
+  <div class="account-menu" id="accountMenu" hidden>
+    <button class="avatar-button" id="accountBtn"
+            aria-label="계정 메뉴" aria-expanded="false">
+      <img id="accountAvatar" alt="" hidden>
+      <span id="accountInitial">A</span>
+    </button>
+
+    <div class="account-dropdown" id="accountDropdown" hidden>
+      <div class="account-info">
+        <strong id="accountName">사용자</strong>
+        <span id="accountEmail"></span>
+      </div>
+      <button id="logoutBtn" class="logout-button">로그아웃</button>
     </div>
+  </div>
+</div>
   </header>
 
   <main>
