@@ -25,7 +25,23 @@ const supabaseClient = window.supabase.createClient(
   SUPABASE_KEY
 );
 
-document.getElementById('loginBtn')?.addEventListener('click', async () => {
+
+const loginBtn = document.getElementById('loginBtn');
+
+// 로그인 상태에 따라 Google 로그인 버튼 표시
+function updateLoginButton(session) {
+  if (!loginBtn) return;
+
+  loginBtn.style.display = session ? 'none' : '';
+}
+
+// 로그인 상태 확인 및 변경 감지
+supabaseClient.auth.onAuthStateChange((_event, session) => {
+  updateLoginButton(session);
+});
+
+// Google 로그인
+loginBtn?.addEventListener('click', async () => {
   const { error } = await supabaseClient.auth.signInWithOAuth({
     provider: 'google',
     options: {
@@ -38,6 +54,7 @@ document.getElementById('loginBtn')?.addEventListener('click', async () => {
     console.error('ASFA 로그인 오류:', error);
   }
 });
+
 
 document.getElementById('workspaceBtn')?.addEventListener('click', () => {
   showToast('작업 공간은 다음 단계에서 계정 및 파일 저장 기능과 연결할 예정이에요.');
