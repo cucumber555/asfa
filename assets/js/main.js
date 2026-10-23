@@ -16,9 +16,29 @@ mainNav?.querySelectorAll('a').forEach(link => link.addEventListener('click', ()
   mainNav.classList.remove('open');
   menuToggle?.setAttribute('aria-expanded', 'false');
 }));
-document.getElementById('loginBtn')?.addEventListener('click', () => {
-  showToast('Google 로그인은 Supabase 인증 설정을 연결한 뒤 사용할 수 있어요.');
+
+const SUPABASE_URL = 'https://mujmwouyopgxwtezhlzv.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_uiChi46cHC53f6QAm8TALQ_MGknEOQ9';
+
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+document.getElementById('loginBtn')?.addEventListener('click', async () => {
+  const { error } = await supabaseClient.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: 'https://asfa.oscadia.net/'
+    }
+  });
+
+  if (error) {
+    showToast('로그인 오류: ' + error.message);
+    console.error('ASFA 로그인 오류:', error);
+  }
 });
+
 document.getElementById('workspaceBtn')?.addEventListener('click', () => {
   showToast('작업 공간은 다음 단계에서 계정 및 파일 저장 기능과 연결할 예정이에요.');
 });
