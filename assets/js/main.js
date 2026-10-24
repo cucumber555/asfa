@@ -39,8 +39,8 @@ const logoutBtn = document.getElementById('logoutBtn');
 
 function updateAccount(user) {
   if (!user) {
-    loginBtn.hidden = false;
-    accountMenu.hidden = true;
+    loginBtn.removeAttribute('hidden');
+accountMenu.setAttribute('hidden', '');
     accountDropdown.hidden = true;
     accountBtn.setAttribute('aria-expanded', 'false');
     return;
@@ -55,8 +55,8 @@ function updateAccount(user) {
 
   const avatarUrl = metadata.avatar_url || metadata.picture || '';
 
-  loginBtn.hidden = true;
-  accountMenu.hidden = false;
+  loginBtn.setAttribute('hidden', '');
+accountMenu.removeAttribute('hidden');
   accountName.textContent = name;
   accountEmail.textContent = user.email || '';
 

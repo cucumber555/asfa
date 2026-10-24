@@ -81,3 +81,10 @@
 .logout-button:hover {
   background: #f6f4fb;
 }
+#loginBtn[hidden] {
+  display: none !important;
+}
+
+#accountMenu[hidden] {
+  display: none !important;
+}
