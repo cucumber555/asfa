@@ -1,0 +1,389 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#7057f5">
+  <title>내 작업 공간 — ASFA</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    .ws-page {
+      min-height: 80vh;
+      padding: 48px 24px 80px;
+      background: #f8f8fc;
+    }
+    .ws-container { max-width: 1100px; margin: auto; }
+    .ws-top {
+      display: flex; justify-content: space-between;
+      align-items: center; gap: 16px; flex-wrap: wrap;
+      margin-bottom: 32px;
+    }
+    .ws-top h1 { margin: 0 0 8px; font-size: clamp(28px,4vw,40px); }
+    .ws-muted { color: #777487; }
+    .ws-panel {
+      padding: 24px; background: white; border: 1px solid #eceaf4;
+      border-radius: 20px; margin-bottom: 28px;
+      box-shadow: 0 8px 28px #30206008;
+    }
+    .ws-form { display: flex; gap: 12px; flex-wrap: wrap; }
+    .ws-form input {
+      flex: 1; min-width: 180px; padding: 13px 15px;
+      border: 1px solid #dedbea; border-radius: 11px;
+      font: inherit; color: #252238; background: white;
+    }
+    .ws-form input:focus {
+      outline: 2px solid #b8aaff; border-color: #7057f5;
+    }
+    .ws-button {
+      padding: 12px 18px; border: 0; border-radius: 11px;
+      background: #7057f5; color: white; font: inherit;
+      font-weight: 650; cursor: pointer;
+    }
+    .ws-button:disabled { opacity: .55; cursor: wait; }
+    .ws-button.secondary {
+      background: white; color: #51476e; border: 1px solid #e3dfef;
+    }
+    .ws-section-title {
+      display: flex; align-items: center;
+      justify-content: space-between; gap: 12px;
+      margin: 32px 0 16px;
+    }
+    .ws-section-title h2 { margin: 0; font-size: 22px; }
+    .ws-grid {
+      display: grid; grid-template-columns: repeat(auto-fill,minmax(240px,1fr));
+      gap: 18px;
+    }
+    .ws-card {
+      padding: 22px; border-radius: 18px; background: white;
+      border: 1px solid #eceaf4; min-width: 0;
+    }
+    .ws-card-icon {
+      display: grid; place-items: center; width: 48px; height: 48px;
+      border-radius: 14px; background: #eee9ff; color: #7057f5;
+      font-size: 24px; margin-bottom: 18px;
+    }
+    .ws-card h3 { margin: 0 0 8px; overflow-wrap: anywhere; }
+    .ws-card p { font-size: 13px; color: #858096; }
+    .ws-card-actions {
+      display: flex; justify-content: flex-end;
+      gap: 8px; margin-top: 20px;
+    }
+    .ws-card-actions button {
+      padding: 8px 11px; border-radius: 9px;
+      border: 1px solid #e6e2ef; background: white;
+      cursor: pointer; color: #51476e; font: inherit; font-size: 13px;
+    }
+    .ws-card-actions button.danger { color: #c13e52; }
+    .ws-status { margin-top: 14px; font-size: 14px; }
+    .ws-empty {
+      grid-column: 1 / -1; text-align: center;
+      padding: 46px 20px; border: 1px dashed #d9d4e9;
+      border-radius: 18px; color: #777487; background: #ffffffa8;
+    }
+    .ws-user { font-size: 14px; color: #68647b; overflow-wrap: anywhere; }
+    @media (max-width: 600px) {
+      .ws-page { padding: 32px 16px 56px; }
+      .ws-panel { padding: 18px; }
+      .ws-form .ws-button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="ASFA 홈">
+      <svg class="brand-mark" viewBox="0 0 100 100" aria-hidden="true">
+        <path d="M15 82 50 15 85 82Z" fill="none"
+          stroke="currentColor" stroke-width="7"/>
+        <path d="M31 51H69M23 67H77" fill="none"
+          stroke="currentColor" stroke-width="4"/>
+      </svg>
+      <span>ASFA</span>
+    </a>
+    <a class="btn btn-quiet" href="index.html">메인으로</a>
+  </header>
+
+  <main class="ws-page">
+    <div class="ws-container">
+      <div class="ws-top">
+        <div>
+          <p class="ws-muted">YOUR WORKSPACE</p>
+          <h1>내 작업 공간</h1>
+          <p class="ws-muted">프로젝트를 만들고 한곳에서 관리하세요.</p>
+        </div>
+        <div class="ws-user" id="userEmail">로그인 상태 확인 중...</div>
+      </div>
+
+      <section class="ws-panel">
+        <h2>새 작업 공간 만들기</h2>
+        <p class="ws-muted">프로젝트나 작업을 구분할 이름을 입력하세요.</p>
+        <form class="ws-form" id="createForm">
+          <input id="workspaceName" maxlength="80"
+            placeholder="예: 학교 프로젝트, 디자인 작업"
+            aria-label="새 작업 공간 이름" required>
+          <button class="ws-button" id="createButton" type="submit">
+            + 만들기
+          </button>
+        </form>
+        <p class="ws-status" id="status" role="status" aria-live="polite"></p>
+      </section>
+
+      <div class="ws-section-title">
+        <h2>내 작업 공간 목록</h2>
+        <button class="ws-button secondary" id="refreshButton" type="button">
+          새로고침
+        </button>
+      </div>
+
+      <section class="ws-grid" id="workspaceList" aria-live="polite">
+        <div class="ws-empty">작업 공간을 불러오는 중...</div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const SUPABASE_URL =
+      'https://mujmwouyopgxwtezhlzv.supabase.co';
+
+    const SUPABASE_KEY =
+      'sb_publishable_uiChi46cHC53f6QAm8TALQ_MGknEOQ9';
+
+    const db = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    const list = document.getElementById('workspaceList');
+    const statusEl = document.getElementById('status');
+    const createForm = document.getElementById('createForm');
+    const nameInput = document.getElementById('workspaceName');
+    const createButton = document.getElementById('createButton');
+    const refreshButton = document.getElementById('refreshButton');
+    const userEmail = document.getElementById('userEmail');
+
+    let currentUser = null;
+    let loading = false;
+
+    function setStatus(message, isError = false) {
+      statusEl.textContent = message;
+      statusEl.style.color = isError ? '#c13e52' : '#5c5480';
+    }
+
+    function makeEmpty(message) {
+      list.replaceChildren();
+      const empty = document.createElement('div');
+      empty.className = 'ws-empty';
+      empty.textContent = message;
+      list.appendChild(empty);
+    }
+
+    function formatDate(value) {
+      if (!value) return '날짜 정보 없음';
+
+      return new Date(value).toLocaleString('ko-KR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    }
+
+    async function loadWorkspaces() {
+      if (!currentUser || loading) return;
+
+      loading = true;
+      refreshButton.disabled = true;
+      makeEmpty('작업 공간을 불러오는 중...');
+
+      const { data, error } = await db
+        .from('asfa_workspaces')
+        .select('id, name, created_at, updated_at')
+        .eq('user_id', currentUser.id)
+        .order('updated_at', { ascending: false });
+
+      loading = false;
+      refreshButton.disabled = false;
+
+      if (error) {
+        console.error('작업 공간 조회 오류:', error);
+        makeEmpty('목록을 불러오지 못했어요. 새로고침하거나 Console 오류를 확인해 주세요.');
+        setStatus('조회 오류: ' + error.message, true);
+        return;
+      }
+
+      list.replaceChildren();
+
+      if (!data || data.length === 0) {
+        makeEmpty('아직 작업 공간이 없어요. 위에서 첫 작업 공간을 만들어 보세요.');
+        return;
+      }
+
+      for (const workspace of data) {
+        const card = document.createElement('article');
+        card.className = 'ws-card';
+
+        const icon = document.createElement('div');
+        icon.className = 'ws-card-icon';
+        icon.textContent = '▦';
+
+        const title = document.createElement('h3');
+        title.textContent = workspace.name;
+
+        const date = document.createElement('p');
+        date.textContent = '생성일 · ' + formatDate(workspace.created_at);
+
+        const actions = document.createElement('div');
+        actions.className = 'ws-card-actions';
+
+        const renameButton = document.createElement('button');
+        renameButton.type = 'button';
+        renameButton.textContent = '이름 변경';
+        renameButton.addEventListener('click', () => renameWorkspace(workspace));
+
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.textContent = '삭제';
+        deleteButton.className = 'danger';
+        deleteButton.addEventListener('click', () => deleteWorkspace(workspace));
+
+        actions.append(renameButton, deleteButton);
+        card.append(icon, title, date, actions);
+        list.appendChild(card);
+      }
+    }
+
+    async function createWorkspace(event) {
+      event.preventDefault();
+
+      if (!currentUser) {
+        setStatus('먼저 로그인해 주세요.', true);
+        return;
+      }
+
+      const name = nameInput.value.trim();
+
+      if (!name) {
+        setStatus('작업 공간 이름을 입력해 주세요.', true);
+        nameInput.focus();
+        return;
+      }
+
+      createButton.disabled = true;
+      setStatus('작업 공간을 저장하고 있어요...');
+
+      const { error } = await db
+        .from('asfa_workspaces')
+        .insert({
+          user_id: currentUser.id,
+          name
+        });
+
+      createButton.disabled = false;
+
+      if (error) {
+        console.error('작업 공간 생성 오류:', error);
+        setStatus('저장 실패: ' + error.message, true);
+        return;
+      }
+
+      nameInput.value = '';
+      setStatus('작업 공간을 만들었어요.');
+      await loadWorkspaces();
+    }
+
+    async function renameWorkspace(workspace) {
+      const nextName = prompt(
+        '새 작업 공간 이름을 입력하세요.',
+        workspace.name
+      );
+
+      if (nextName === null) return;
+
+      const name = nextName.trim();
+
+      if (!name || name.length > 80) {
+        setStatus('이름은 1~80자로 입력해 주세요.', true);
+        return;
+      }
+
+      const { error } = await db
+        .from('asfa_workspaces')
+        .update({
+          name,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', workspace.id)
+        .eq('user_id', currentUser.id);
+
+      if (error) {
+        console.error('이름 변경 오류:', error);
+        setStatus('이름 변경 실패: ' + error.message, true);
+        return;
+      }
+
+      setStatus('이름을 변경했어요.');
+      await loadWorkspaces();
+    }
+
+    async function deleteWorkspace(workspace) {
+      if (!confirm(
+        '"' + workspace.name + '" 작업 공간을 삭제할까요?'
+      )) return;
+
+      const { error } = await db
+        .from('asfa_workspaces')
+        .delete()
+        .eq('id', workspace.id)
+        .eq('user_id', currentUser.id);
+
+      if (error) {
+        console.error('삭제 오류:', error);
+        setStatus('삭제 실패: ' + error.message, true);
+        return;
+      }
+
+      setStatus('작업 공간을 삭제했어요.');
+      await loadWorkspaces();
+    }
+
+    createForm.addEventListener('submit', createWorkspace);
+    refreshButton.addEventListener('click', loadWorkspaces);
+
+    async function startWorkspace() {
+      const { data, error } = await db.auth.getSession();
+
+      if (error) {
+        console.error('로그인 상태 확인 오류:', error);
+        userEmail.textContent = '로그인 상태를 확인할 수 없어요.';
+        makeEmpty('인증 오류가 발생했어요. 메인 페이지에서 다시 로그인해 주세요.');
+        return;
+      }
+
+      currentUser = data.session?.user || null;
+
+      if (!currentUser) {
+        userEmail.textContent = '로그인이 필요해요.';
+        makeEmpty('작업 공간을 사용하려면 Google 로그인이 필요해요.');
+
+        const link = document.createElement('a');
+        link.href = 'index.html';
+        link.className = 'btn btn-primary';
+        link.textContent = 'ASFA 메인으로 가서 로그인';
+        list.appendChild(link);
+        return;
+      }
+
+      userEmail.textContent = currentUser.email || '로그인 완료';
+      await loadWorkspaces();
+    }
+
+    db.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        window.location.href = 'index.html';
+      }
+    });
+
+    startWorkspace();
+  </script>
+</body>
+</html>
