@@ -4,386 +4,997 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#7057f5">
-  <title>내 작업 공간 — ASFA</title>
-  <link rel="stylesheet" href="assets/css/style.css">
+  <meta name="theme-color" content="#faf5fc">
+  <title>내 작업 공간 | ASFA</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    .ws-page {
-      min-height: 80vh;
-      padding: 48px 24px 80px;
-      background: #f8f8fc;
+    :root {
+      --purple: #9275ff;
+      --purple-light: #eee8ff;
+      --ink: #302d40;
+      --muted: #9691a6;
+      --line: #f0edf5;
+      --page: #faf5fc;
     }
-    .ws-container { max-width: 1100px; margin: auto; }
-    .ws-top {
-      display: flex; justify-content: space-between;
-      align-items: center; gap: 16px; flex-wrap: wrap;
-      margin-bottom: 32px;
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 24px;
+      background: var(--page);
+      color: var(--ink);
+      font-family: Inter, "Noto Sans KR", Arial, sans-serif;
+      font-size: 13px;
     }
-    .ws-top h1 { margin: 0 0 8px; font-size: clamp(28px,4vw,40px); }
-    .ws-muted { color: #777487; }
-    .ws-panel {
-      padding: 24px; background: white; border: 1px solid #eceaf4;
-      border-radius: 20px; margin-bottom: 28px;
-      box-shadow: 0 8px 28px #30206008;
+
+    button, input { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+
+    .app {
+      width: min(1120px, 100%);
+      min-height: min(720px, calc(100vh - 48px));
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 210px minmax(0, 1fr);
+      background: white;
+      border: 1px solid #eee7f4;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 18px 55px #62407d0c;
     }
-    .ws-form { display: flex; gap: 12px; flex-wrap: wrap; }
-    .ws-form input {
-      flex: 1; min-width: 180px; padding: 13px 15px;
-      border: 1px solid #dedbea; border-radius: 11px;
-      font: inherit; color: #252238; background: white;
+
+    /* Sidebar */
+    .sidebar {
+      background: #fcfaff;
+      border-right: 1px solid var(--line);
+      padding: 28px 16px 18px;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
     }
-    .ws-form input:focus {
-      outline: 2px solid #b8aaff; border-color: #7057f5;
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 0 2px;
+      margin-bottom: 42px;
+      color: #514a68;
+      text-decoration: none;
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -.6px;
     }
-    .ws-button {
-      padding: 12px 18px; border: 0; border-radius: 11px;
-      background: #7057f5; color: white; font: inherit;
-      font-weight: 650; cursor: pointer;
+
+    .brand-mark {
+      width: 28px;
+      height: 28px;
+      color: var(--purple);
+      flex: 0 0 auto;
     }
-    .ws-button:disabled { opacity: .55; cursor: wait; }
-    .ws-button.secondary {
-      background: white; color: #51476e; border: 1px solid #e3dfef;
+
+    .nav {
+      display: grid;
+      gap: 7px;
     }
-    .ws-section-title {
-      display: flex; align-items: center;
-      justify-content: space-between; gap: 12px;
-      margin: 32px 0 16px;
+
+    .nav-button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      border: 0;
+      background: transparent;
+      color: #888398;
+      padding: 12px 11px;
+      border-radius: 10px;
+      text-align: left;
+      cursor: pointer;
+      transition: background .18s, color .18s;
     }
-    .ws-section-title h2 { margin: 0; font-size: 22px; }
-    .ws-grid {
-      display: grid; grid-template-columns: repeat(auto-fill,minmax(240px,1fr));
-      gap: 18px;
+
+    .nav-button:hover { background: #f2edfc; }
+
+    .nav-button.active {
+      background: var(--purple-light);
+      color: #7358df;
+      font-weight: 700;
     }
-    .ws-card {
-      padding: 22px; border-radius: 18px; background: white;
-      border: 1px solid #eceaf4; min-width: 0;
+
+    .nav-icon {
+      width: 16px;
+      text-align: center;
+      font-size: 15px;
     }
-    .ws-card-icon {
-      display: grid; place-items: center; width: 48px; height: 48px;
-      border-radius: 14px; background: #eee9ff; color: #7057f5;
-      font-size: 24px; margin-bottom: 18px;
+
+    .sidebar-bottom { margin-top: auto; padding-top: 24px; }
+
+    .account-mini {
+      margin-top: 18px;
+      padding: 11px 8px 0;
+      border-top: 1px solid var(--line);
+      overflow-wrap: anywhere;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
     }
-    .ws-card h3 { margin: 0 0 8px; overflow-wrap: anywhere; }
-    .ws-card p { font-size: 13px; color: #858096; }
-    .ws-card-actions {
-      display: flex; justify-content: flex-end;
-      gap: 8px; margin-top: 20px;
+
+    /* Main area */
+    .main {
+      min-width: 0;
+      padding: 34px clamp(20px, 4vw, 42px) 24px;
+      display: flex;
+      flex-direction: column;
     }
-    .ws-card-actions button {
-      padding: 8px 11px; border-radius: 9px;
-      border: 1px solid #e6e2ef; background: white;
-      cursor: pointer; color: #51476e; font: inherit; font-size: 13px;
+
+    .heading {
+      margin-bottom: 25px;
     }
-    .ws-card-actions button.danger { color: #c13e52; }
-    .ws-status { margin-top: 14px; font-size: 14px; }
-    .ws-empty {
-      grid-column: 1 / -1; text-align: center;
-      padding: 46px 20px; border: 1px dashed #d9d4e9;
-      border-radius: 18px; color: #777487; background: #ffffffa8;
+
+    .heading h1 {
+      margin: 0 0 8px;
+      font-size: clamp(23px, 3vw, 30px);
+      line-height: 1.25;
+      letter-spacing: -1.1px;
+      font-weight: 800;
     }
-    .ws-user { font-size: 14px; color: #68647b; overflow-wrap: anywhere; }
-    @media (max-width: 600px) {
-      .ws-page { padding: 32px 16px 56px; }
-      .ws-panel { padding: 18px; }
-      .ws-form .ws-button { width: 100%; }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 13px;
+      margin: 0;
+    }
+
+    .search-wrap {
+      position: relative;
+      margin-bottom: 30px;
+    }
+
+    .search-icon {
+      position: absolute;
+      top: 50%;
+      left: 16px;
+      transform: translateY(-50%);
+      color: #a19aaf;
+      pointer-events: none;
+    }
+
+    .search {
+      width: 100%;
+      height: 48px;
+      padding: 0 16px 0 40px;
+      border: 1px solid #efebf5;
+      background: #faf9fc;
+      color: var(--ink);
+      border-radius: 12px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .search:focus {
+      border-color: #c6b7ff;
+      box-shadow: 0 0 0 3px #9275ff14;
+    }
+
+    .search::placeholder { color: #b1adbc; }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 750;
+      margin: 0 0 17px;
+      letter-spacing: -.2px;
+    }
+
+    /* Create shortcuts */
+    .create-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 60px);
+      gap: 12px;
+      margin-bottom: 34px;
+    }
+
+    .create-card {
+      width: 60px;
+      height: 60px;
+      border: 0;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: transform .18s, box-shadow .18s;
+    }
+
+    .create-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px #4e376a13;
+    }
+
+    .create-card:disabled {
+      opacity: .6;
+      cursor: wait;
+      transform: none;
+    }
+
+    .create-card .symbol {
+      font-size: 24px;
+      line-height: 1;
+      font-weight: 400;
+    }
+
+    .create-doc { background: #eee7ff; color: #9b7bff; }
+    .create-design { background: #ffe8f1; color: #e87fac; }
+    .create-image { background: #dff7eb; color: #56b995; }
+    .create-other { background: #f4f2f8; color: #8d879e; }
+
+    .create-label {
+      display: none;
+    }
+
+    /* Recent projects */
+    .recent-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .recent-heading .section-title { margin: 0; }
+
+    .refresh {
+      border: 0;
+      background: transparent;
+      color: #8f879f;
+      padding: 5px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .recent-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .project {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+      min-width: 0;
+    }
+
+    .project:hover .project-name { color: #795de6; }
+
+    .project-thumb {
+      width: 48px;
+      height: 48px;
+      flex: 0 0 48px;
+      border-radius: 10px;
+      box-shadow: inset 0 0 0 1px #ffffff20;
+    }
+
+    .thumb-doc {
+      background: linear-gradient(135deg, #d7c9ff, #9676ff);
+    }
+
+    .thumb-design {
+      background: linear-gradient(135deg, #ffd6e7, #ef8fbb);
+    }
+
+    .thumb-image {
+      background: linear-gradient(135deg, #c8f3df, #70cba5);
+    }
+
+    .thumb-other {
+      background: linear-gradient(135deg, #d8e6ff, #91b8f9);
+    }
+
+    .project-info { min-width: 0; flex: 1; }
+
+    .project-name {
+      display: block;
+      font-size: 13px;
+      font-weight: 750;
+      color: #4c465e;
+      overflow-wrap: anywhere;
+      transition: color .18s;
+    }
+
+    .project-meta {
+      display: block;
+      color: #aaa5b7;
+      font-size: 11px;
+      margin-top: 5px;
+    }
+
+    .project-actions {
+      display: flex;
+      gap: 5px;
+      opacity: 0;
+      transition: opacity .18s;
+    }
+
+    .project:hover .project-actions,
+    .project:focus-within .project-actions { opacity: 1; }
+
+    .small-action {
+      border: 1px solid #eeeaf4;
+      background: white;
+      color: #777087;
+      border-radius: 7px;
+      padding: 6px 8px;
+      cursor: pointer;
+      font-size: 11px;
+    }
+
+    .small-action.delete { color: #c45a79; }
+
+    .empty {
+      padding: 28px 16px;
+      border: 1px dashed #e8e1f0;
+      border-radius: 14px;
+      color: #9a94aa;
+      text-align: center;
+      line-height: 1.8;
+    }
+
+    .status {
+      min-height: 18px;
+      margin: 18px 0 0;
+      font-size: 12px;
+      color: #7b68d6;
+      overflow-wrap: anywhere;
+    }
+
+    .status.error { color: #c34c69; }
+
+    .footer {
+      margin-top: auto;
+      padding-top: 22px;
+      border-top: 1px solid var(--line);
+      color: #aaa5b6;
+      font-size: 11px;
+      line-height: 1.7;
+    }
+
+    /* Simple editor dialog */
+    .dialog-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      background: #29203966;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+    }
+
+    .dialog-backdrop[hidden] { display: none; }
+
+    .dialog {
+      width: min(620px, 100%);
+      background: white;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 20px 70px #24153630;
+    }
+
+    .dialog h2 { margin: 0 0 8px; font-size: 21px; }
+
+    .dialog input, .dialog textarea {
+      width: 100%;
+      padding: 12px 13px;
+      border: 1px solid #e8e2f1;
+      border-radius: 10px;
+      margin-top: 12px;
+      outline-color: #b9a8ff;
+      color: var(--ink);
+      background: #fdfcff;
+    }
+
+    .dialog textarea {
+      min-height: 220px;
+      resize: vertical;
+      line-height: 1.7;
+    }
+
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .dialog-button {
+      border: 1px solid #e8e2f1;
+      background: white;
+      color: #625a76;
+      padding: 10px 15px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .dialog-button.primary {
+      background: #8b6df5;
+      border-color: #8b6df5;
+      color: white;
+    }
+
+    .dialog-button:disabled { opacity: .6; }
+
+    @media (min-width: 900px) {
+      .main { min-height: 660px; }
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 10px; }
+
+      .app {
+        grid-template-columns: 1fr;
+        border-radius: 18px;
+        min-height: calc(100vh - 20px);
+      }
+
+      .sidebar {
+        padding: 13px 14px 10px;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .brand {
+        margin-bottom: 14px;
+        font-size: 16px;
+      }
+
+      .brand-mark { width: 25px; height: 25px; }
+
+      .nav {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 5px;
+      }
+
+      .nav-button {
+        justify-content: center;
+        flex-direction: column;
+        gap: 4px;
+        padding: 9px 3px;
+        font-size: 11px;
+      }
+
+      .nav-icon { font-size: 14px; }
+
+      .sidebar-bottom { display: none; }
+
+      .main { padding: 26px 18px 18px; }
+
+      .heading { margin-bottom: 20px; }
+
+      .search-wrap { margin-bottom: 26px; }
+
+      .create-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 9px;
+        margin-bottom: 30px;
+      }
+
+      .create-card {
+        width: 100%;
+        height: 58px;
+      }
+
+      .project-actions { opacity: 1; }
+      .project-thumb { width: 44px; height: 44px; flex-basis: 44px; }
     }
   </style>
 </head>
 <body>
-  <header class="site-header">
-    <a class="brand" href="index.html" aria-label="ASFA 홈">
-      <svg class="brand-mark" viewBox="0 0 100 100" aria-hidden="true">
-        <path d="M15 82 50 15 85 82Z" fill="none"
-          stroke="currentColor" stroke-width="7"/>
-        <path d="M31 51H69M23 67H77" fill="none"
-          stroke="currentColor" stroke-width="4"/>
-      </svg>
-      <span>ASFA</span>
-    </a>
-    <a class="btn btn-quiet" href="index.html">메인으로</a>
-  </header>
+  <div class="app">
+    <aside class="sidebar">
+      <a class="brand" href="index.html">
+        <svg class="brand-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+          <path d="M10 83 50 12 90 83Z" stroke="currentColor" stroke-width="5"/>
+          <path d="M28 56H72M20 70H80" stroke="currentColor" stroke-width="3"/>
+        </svg>
+        <span>ASFA</span>
+      </a>
 
-  <main class="ws-page">
-    <div class="ws-container">
-      <div class="ws-top">
-        <div>
-          <p class="ws-muted">YOUR WORKSPACE</p>
-          <h1>내 작업 공간</h1>
-          <p class="ws-muted">프로젝트를 만들고 한곳에서 관리하세요.</p>
-        </div>
-        <div class="ws-user" id="userEmail">로그인 상태 확인 중...</div>
-      </div>
-
-      <section class="ws-panel">
-        <h2>새 작업 공간 만들기</h2>
-        <p class="ws-muted">프로젝트나 작업을 구분할 이름을 입력하세요.</p>
-        <form class="ws-form" id="createForm">
-          <input id="workspaceName" maxlength="80"
-            placeholder="예: 학교 프로젝트, 디자인 작업"
-            aria-label="새 작업 공간 이름" required>
-          <button class="ws-button" id="createButton" type="submit">
-            + 만들기
-          </button>
-        </form>
-        <p class="ws-status" id="status" role="status" aria-live="polite"></p>
-      </section>
-
-      <div class="ws-section-title">
-        <h2>내 작업 공간 목록</h2>
-        <button class="ws-button secondary" id="refreshButton" type="button">
-          새로고침
+      <nav class="nav" aria-label="작업 공간 메뉴">
+        <button class="nav-button active" data-view="mine">
+          <span class="nav-icon">▦</span><span>내 작업</span>
         </button>
+        <button class="nav-button" data-view="favorites">
+          <span class="nav-icon">☆</span><span>즐겨찾기</span>
+        </button>
+        <button class="nav-button" data-view="shared">
+          <span class="nav-icon">♧</span><span>공유받음</span>
+        </button>
+        <button class="nav-button" data-view="trash">
+          <span class="nav-icon">▤</span><span>휴지통</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <button class="nav-button" id="settingsButton">
+          <span class="nav-icon">⚙</span><span>설정</span>
+        </button>
+        <div class="account-mini" id="accountMini">로그인 확인 중...</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="heading">
+        <h1 id="pageTitle">나의 작업 공간</h1>
+        <p class="subtitle" id="pageSubtitle">오늘도 좋은 작업을 시작해요.</p>
+      </header>
+
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input
+          class="search"
+          id="searchInput"
+          type="search"
+          placeholder="파일과 프로젝트 검색"
+          aria-label="파일과 프로젝트 검색"
+        >
       </div>
 
-      <section class="ws-grid" id="workspaceList" aria-live="polite">
-        <div class="ws-empty">작업 공간을 불러오는 중...</div>
+      <section aria-labelledby="createHeading">
+        <h2 class="section-title" id="createHeading">새로 만들기</h2>
+        <div class="create-grid">
+          <button class="create-card create-doc" data-type="document"
+            aria-label="새 문서 만들기" title="새 문서 만들기">
+            <span class="symbol">▤</span>
+          </button>
+          <button class="create-card create-design" data-type="design"
+            aria-label="새 디자인 만들기" title="새 디자인 만들기">
+            <span class="symbol">◇</span>
+          </button>
+          <button class="create-card create-image" data-type="image"
+            aria-label="이미지 편집 작업 만들기" title="이미지 편집 작업 만들기">
+            <span class="symbol">▧</span>
+          </button>
+          <button class="create-card create-other" id="moreCreate"
+            aria-label="다른 작업 만들기" title="다른 작업 만들기">
+            <span class="symbol">＋</span>
+          </button>
+        </div>
       </section>
-    </div>
-  </main>
+
+      <section aria-labelledby="recentHeading">
+        <div class="recent-heading">
+          <h2 class="section-title" id="recentHeading">최근 작업</h2>
+          <button class="refresh" id="refreshButton" type="button">새로고침 ↻</button>
+        </div>
+
+        <div class="recent-list" id="recentList" aria-live="polite">
+          <div class="empty">작업 목록을 불러오고 있어요...</div>
+        </div>
+        <p class="status" id="status" role="status" aria-live="polite"></p>
+      </section>
+
+      <footer class="footer">
+        ASFA 작업 공간 · 문서와 프로젝트를 한곳에서 관리하세요.
+      </footer>
+    </main>
+  </div>
+
+  <div class="dialog-backdrop" id="editorDialog" hidden>
+    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="editorTitle">
+      <h2 id="editorTitle">작업 편집</h2>
+      <p class="subtitle" id="editorDescription">내용을 작성하고 저장하세요.</p>
+      <input id="editorName" maxlength="120" placeholder="작업 이름" aria-label="작업 이름">
+      <textarea id="editorContent" placeholder="여기에 작업 내용을 입력하세요." aria-label="작업 내용"></textarea>
+      <div class="dialog-actions">
+        <button class="dialog-button" id="cancelEditor" type="button">닫기</button>
+        <button class="dialog-button primary" id="saveEditor" type="button">저장</button>
+      </div>
+    </section>
+  </div>
 
   <script>
-    const SUPABASE_URL =
-      'https://mujmwouyopgxwtezhlzv.supabase.co';
+    const SUPABASE_URL = 'https://mujmwouyopgxwtezhlzv.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_uiChi46cHC53f6QAm8TALQ_MGknEOQ9';
 
-    const SUPABASE_KEY =
-      'sb_publishable_uiChi46cHC53f6QAm8TALQ_MGknEOQ9';
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const db = window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_KEY
-    );
-
-    const list = document.getElementById('workspaceList');
+    const recentList = document.getElementById('recentList');
     const statusEl = document.getElementById('status');
-    const createForm = document.getElementById('createForm');
-    const nameInput = document.getElementById('workspaceName');
-    const createButton = document.getElementById('createButton');
-    const refreshButton = document.getElementById('refreshButton');
-    const userEmail = document.getElementById('userEmail');
+    const searchInput = document.getElementById('searchInput');
+    const accountMini = document.getElementById('accountMini');
+    const dialog = document.getElementById('editorDialog');
+    const editorName = document.getElementById('editorName');
+    const editorContent = document.getElementById('editorContent');
+    const saveEditor = document.getElementById('saveEditor');
 
     let currentUser = null;
-    let loading = false;
+    let files = [];
+    let editingFile = null;
+    let currentView = 'mine';
+    let busy = false;
 
-    function setStatus(message, isError = false) {
+    function setStatus(message, error = false) {
       statusEl.textContent = message;
-      statusEl.style.color = isError ? '#c13e52' : '#5c5480';
+      statusEl.classList.toggle('error', error);
     }
 
-    function makeEmpty(message) {
-      list.replaceChildren();
-      const empty = document.createElement('div');
-      empty.className = 'ws-empty';
-      empty.textContent = message;
-      list.appendChild(empty);
+    function fileTypeLabel(type) {
+      return ({
+        document: '문서 · ASFA 문서',
+        design: '디자인 · 디자인 작업',
+        image: '이미지 · 이미지 편집',
+        other: '프로젝트 · 기타 작업'
+      })[type] || '작업 · ASFA 프로젝트';
     }
 
-    function formatDate(value) {
-      if (!value) return '날짜 정보 없음';
+    function thumbClass(type) {
+      return ({
+        document: 'thumb-doc',
+        design: 'thumb-design',
+        image: 'thumb-image',
+        other: 'thumb-other'
+      })[type] || 'thumb-other';
+    }
 
-      return new Date(value).toLocaleString('ko-KR', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
+    function dateLabel(date) {
+      if (!date) return 'ASFA 작업';
+      return new Date(date).toLocaleDateString('ko-KR', {
+        year: 'numeric', month: '2-digit', day: '2-digit'
       });
     }
 
-    async function loadWorkspaces() {
-      if (!currentUser || loading) return;
+    function showEmpty(message) {
+      recentList.replaceChildren();
+      const empty = document.createElement('div');
+      empty.className = 'empty';
+      empty.textContent = message;
+      recentList.appendChild(empty);
+    }
 
-      loading = true;
-      refreshButton.disabled = true;
-      makeEmpty('작업 공간을 불러오는 중...');
+    async function loadFiles() {
+      if (!currentUser || busy) return;
+
+      busy = true;
+      showEmpty('작업을 불러오는 중...');
 
       const { data, error } = await db
-        .from('asfa_workspaces')
-        .select('id, name, created_at, updated_at')
+        .from('asfa_files')
+        .select('id, name, file_type, content, created_at, updated_at')
         .eq('user_id', currentUser.id)
         .order('updated_at', { ascending: false });
 
-      loading = false;
-      refreshButton.disabled = false;
+      busy = false;
 
       if (error) {
-        console.error('작업 공간 조회 오류:', error);
-        makeEmpty('목록을 불러오지 못했어요. 새로고침하거나 Console 오류를 확인해 주세요.');
-        setStatus('조회 오류: ' + error.message, true);
+        console.error('ASFA 작업 조회 오류:', error);
+        showEmpty('작업을 불러오지 못했어요.');
+        setStatus('오류: ' + error.message, true);
         return;
       }
 
-      list.replaceChildren();
-
-      if (!data || data.length === 0) {
-        makeEmpty('아직 작업 공간이 없어요. 위에서 첫 작업 공간을 만들어 보세요.');
-        return;
-      }
-
-      for (const workspace of data) {
-        const card = document.createElement('article');
-        card.className = 'ws-card';
-
-        const icon = document.createElement('div');
-        icon.className = 'ws-card-icon';
-        icon.textContent = '▦';
-
-        const title = document.createElement('h3');
-        title.textContent = workspace.name;
-
-        const date = document.createElement('p');
-        date.textContent = '생성일 · ' + formatDate(workspace.created_at);
-
-        const actions = document.createElement('div');
-        actions.className = 'ws-card-actions';
-
-        const renameButton = document.createElement('button');
-        renameButton.type = 'button';
-        renameButton.textContent = '이름 변경';
-        renameButton.addEventListener('click', () => renameWorkspace(workspace));
-
-        const deleteButton = document.createElement('button');
-        deleteButton.type = 'button';
-        deleteButton.textContent = '삭제';
-        deleteButton.className = 'danger';
-        deleteButton.addEventListener('click', () => deleteWorkspace(workspace));
-
-        actions.append(renameButton, deleteButton);
-        card.append(icon, title, date, actions);
-        list.appendChild(card);
-      }
+      files = data || [];
+      renderFiles();
     }
 
-    async function createWorkspace(event) {
-      event.preventDefault();
-
-      if (!currentUser) {
-        setStatus('먼저 로그인해 주세요.', true);
-        return;
-      }
-
-      const name = nameInput.value.trim();
-
-      if (!name) {
-        setStatus('작업 공간 이름을 입력해 주세요.', true);
-        nameInput.focus();
-        return;
-      }
-
-      createButton.disabled = true;
-      setStatus('작업 공간을 저장하고 있어요...');
-
-      const { error } = await db
-        .from('asfa_workspaces')
-        .insert({
-          user_id: currentUser.id,
-          name
-        });
-
-      createButton.disabled = false;
-
-      if (error) {
-        console.error('작업 공간 생성 오류:', error);
-        setStatus('저장 실패: ' + error.message, true);
-        return;
-      }
-
-      nameInput.value = '';
-      setStatus('작업 공간을 만들었어요.');
-      await loadWorkspaces();
-    }
-
-    async function renameWorkspace(workspace) {
-      const nextName = prompt(
-        '새 작업 공간 이름을 입력하세요.',
-        workspace.name
+    function renderFiles() {
+      const query = searchInput.value.trim().toLocaleLowerCase();
+      let shown = files.filter(file =>
+        (file.name || '').toLocaleLowerCase().includes(query)
       );
 
-      if (nextName === null) return;
-
-      const name = nextName.trim();
-
-      if (!name || name.length > 80) {
-        setStatus('이름은 1~80자로 입력해 주세요.', true);
+      if (currentView === 'favorites') {
+        shown = [];
+        showEmpty('즐겨찾기 기능은 다음 단계에서 연결할 예정이에요.');
         return;
       }
 
-      const { error } = await db
-        .from('asfa_workspaces')
-        .update({
-          name,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', workspace.id)
-        .eq('user_id', currentUser.id);
-
-      if (error) {
-        console.error('이름 변경 오류:', error);
-        setStatus('이름 변경 실패: ' + error.message, true);
+      if (currentView === 'shared') {
+        shown = [];
+        showEmpty('공유받은 작업 기능은 다음 단계에서 연결할 예정이에요.');
         return;
       }
 
-      setStatus('이름을 변경했어요.');
-      await loadWorkspaces();
+      if (currentView === 'trash') {
+        shown = [];
+        showEmpty('휴지통과 복원 기능은 다음 단계에서 연결할 예정이에요.');
+        return;
+      }
+
+      recentList.replaceChildren();
+
+      if (shown.length === 0) {
+        showEmpty(query
+          ? '검색 결과가 없어요. 다른 검색어를 입력해 보세요.'
+          : '아직 작업이 없어요. 위의 아이콘을 눌러 첫 작업을 만들어 보세요.');
+        return;
+      }
+
+      shown.forEach(file => {
+        const row = document.createElement('div');
+        row.className = 'project';
+
+        const thumb = document.createElement('div');
+        thumb.className = 'project-thumb ' + thumbClass(file.file_type);
+
+        const info = document.createElement('div');
+        info.className = 'project-info';
+
+        const name = document.createElement('span');
+        name.className = 'project-name';
+        name.textContent = file.name;
+
+        const meta = document.createElement('span');
+        meta.className = 'project-meta';
+        meta.textContent = fileTypeLabel(file.file_type) + ' · ' + dateLabel(file.updated_at);
+
+        info.append(name, meta);
+
+        const actions = document.createElement('div');
+        actions.className = 'project-actions';
+
+        const edit = document.createElement('button');
+        edit.className = 'small-action';
+        edit.type = 'button';
+        edit.textContent = '열기';
+        edit.addEventListener('click', event => {
+          event.stopPropagation();
+          openFile(file);
+        });
+
+        const remove = document.createElement('button');
+        remove.className = 'small-action delete';
+        remove.type = 'button';
+        remove.textContent = '삭제';
+        remove.addEventListener('click', event => {
+          event.stopPropagation();
+          deleteFile(file);
+        });
+
+        actions.append(edit, remove);
+        row.append(thumb, info, actions);
+        row.addEventListener('click', () => openFile(file));
+        recentList.appendChild(row);
+      });
     }
 
-    async function deleteWorkspace(workspace) {
-      if (!confirm(
-        '"' + workspace.name + '" 작업 공간을 삭제할까요?'
-      )) return;
+    function openEditor(type, file = null) {
+      editingFile = file;
+      document.getElementById('editorTitle').textContent =
+        file ? '작업 편집' : '새 작업 만들기';
+
+      document.getElementById('editorDescription').textContent =
+        file ? fileTypeLabel(file.file_type) :
+        fileTypeLabel(type);
+
+      editorName.value = file?.name || '';
+      const content = file?.content;
+      editorContent.value =
+        typeof content === 'string' ? content :
+        content && typeof content.text === 'string' ? content.text : '';
+
+      dialog.hidden = false;
+      editorName.focus();
+    }
+
+    function openFile(file) {
+      openEditor(file.file_type, file);
+    }
+
+    function closeEditor() {
+      dialog.hidden = true;
+      editingFile = null;
+    }
+
+    async function saveFile() {
+      if (!currentUser) return;
+
+      const name = editorName.value.trim();
+      const text = editorContent.value;
+
+      if (!name) {
+        setStatus('작업 이름을 입력해 주세요.', true);
+        editorName.focus();
+        return;
+      }
+
+      saveEditor.disabled = true;
+      saveEditor.textContent = '저장 중...';
+
+      let result;
+
+      if (editingFile) {
+        result = await db
+          .from('asfa_files')
+          .update({
+            name,
+            content: { text },
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', editingFile.id)
+          .eq('user_id', currentUser.id);
+      } else {
+        const type = document.getElementById('editorDescription')
+          .dataset.type || 'document';
+
+        result = await db
+          .from('asfa_files')
+          .insert({
+            user_id: currentUser.id,
+            name,
+            file_type: type,
+            content: { text }
+          });
+      }
+
+      saveEditor.disabled = false;
+      saveEditor.textContent = '저장';
+
+      if (result.error) {
+        console.error('ASFA 작업 저장 오류:', result.error);
+        setStatus('저장 실패: ' + result.error.message, true);
+        return;
+      }
+
+      closeEditor();
+      setStatus('작업을 저장했어요.');
+      await loadFiles();
+    }
+
+    function createFile(type) {
+      if (!currentUser) {
+        setStatus('먼저 Google 로그인을 해 주세요.', true);
+        return;
+      }
+
+      document.getElementById('editorDescription').dataset.type = type;
+
+      const defaults = {
+        document: '새 문서',
+        design: '새 디자인',
+        image: '이미지 편집',
+        other: '새 프로젝트'
+      };
+
+      openEditor(type);
+      editorName.value = defaults[type] || defaults.other;
+    }
+
+    async function deleteFile(file) {
+      if (!confirm('"' + file.name + '" 작업을 삭제할까요?')) return;
 
       const { error } = await db
-        .from('asfa_workspaces')
+        .from('asfa_files')
         .delete()
-        .eq('id', workspace.id)
+        .eq('id', file.id)
         .eq('user_id', currentUser.id);
 
       if (error) {
-        console.error('삭제 오류:', error);
+        console.error('ASFA 작업 삭제 오류:', error);
         setStatus('삭제 실패: ' + error.message, true);
         return;
       }
 
-      setStatus('작업 공간을 삭제했어요.');
-      await loadWorkspaces();
+      setStatus('작업을 삭제했어요.');
+      await loadFiles();
     }
 
-    createForm.addEventListener('submit', createWorkspace);
-    refreshButton.addEventListener('click', loadWorkspaces);
+    document.querySelectorAll('.create-card[data-type]').forEach(button => {
+      button.addEventListener('click', () => createFile(button.dataset.type));
+    });
 
-    async function startWorkspace() {
+    document.getElementById('moreCreate').addEventListener('click', () => {
+      if (!currentUser) {
+        setStatus('먼저 Google 로그인을 해 주세요.', true);
+        return;
+      }
+
+      const choice = prompt(
+        '어떤 작업을 만들까요?\n1 = 문서\n2 = 디자인\n3 = 이미지 편집\n4 = 프로젝트',
+        '1'
+      );
+
+      const types = {
+        '1': 'document',
+        '2': 'design',
+        '3': 'image',
+        '4': 'other'
+      };
+
+      if (choice === null) return;
+
+      if (!types[choice]) {
+        setStatus('1~4 중에서 선택해 주세요.', true);
+        return;
+      }
+
+      createFile(types[choice]);
+    });
+
+    saveEditor.addEventListener('click', saveFile);
+    document.getElementById('cancelEditor').addEventListener('click', closeEditor);
+    document.getElementById('refreshButton').addEventListener('click', loadFiles);
+    searchInput.addEventListener('input', renderFiles);
+
+    dialog.addEventListener('click', event => {
+      if (event.target === dialog) closeEditor();
+    });
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && !dialog.hidden) closeEditor();
+    });
+
+    document.querySelectorAll('.nav-button[data-view]').forEach(button => {
+      button.addEventListener('click', () => {
+        document.querySelectorAll('.nav-button[data-view]').forEach(item => {
+          item.classList.remove('active');
+        });
+
+        button.classList.add('active');
+        currentView = button.dataset.view;
+
+        const titles = {
+          mine: ['나의 작업 공간', '오늘도 좋은 작업을 시작해요.'],
+          favorites: ['즐겨찾기', '자주 사용하는 작업을 모아 보세요.'],
+          shared: ['공유받음', '다른 사용자와 공유한 작업을 확인하세요.'],
+          trash: ['휴지통', '삭제한 작업을 관리하세요.']
+        };
+
+        document.getElementById('pageTitle').textContent = titles[currentView][0];
+        document.getElementById('pageSubtitle').textContent = titles[currentView][1];
+        renderFiles();
+      });
+    });
+
+    document.getElementById('settingsButton').addEventListener('click', () => {
+      if (!currentUser) return;
+      alert(
+        '로그인 계정: ' + (currentUser.email || '이메일 정보 없음') +
+        '\n\n계정 설정 기능은 다음 단계에서 추가할 예정이에요.'
+      );
+    });
+
+    async function start() {
       const { data, error } = await db.auth.getSession();
 
       if (error) {
-        console.error('로그인 상태 확인 오류:', error);
-        userEmail.textContent = '로그인 상태를 확인할 수 없어요.';
-        makeEmpty('인증 오류가 발생했어요. 메인 페이지에서 다시 로그인해 주세요.');
+        console.error('ASFA 로그인 상태 오류:', error);
+        accountMini.textContent = '로그인 상태 확인 실패';
+        showEmpty('로그인 상태를 확인할 수 없어요. 메인 페이지에서 다시 로그인해 주세요.');
         return;
       }
 
       currentUser = data.session?.user || null;
 
       if (!currentUser) {
-        userEmail.textContent = '로그인이 필요해요.';
-        makeEmpty('작업 공간을 사용하려면 Google 로그인이 필요해요.');
+        accountMini.textContent = '로그인이 필요해요.';
+        showEmpty('작업 공간을 사용하려면 먼저 로그인해 주세요.');
 
         const link = document.createElement('a');
         link.href = 'index.html';
-        link.className = 'btn btn-primary';
-        link.textContent = 'ASFA 메인으로 가서 로그인';
-        list.appendChild(link);
+        link.textContent = 'ASFA 메인으로 이동하여 로그인';
+        link.style.color = '#795de6';
+        link.style.display = 'inline-block';
+        link.style.marginTop = '10px';
+        recentList.appendChild(link);
         return;
       }
 
-      userEmail.textContent = currentUser.email || '로그인 완료';
-      await loadWorkspaces();
+      accountMini.textContent = currentUser.email || '로그인 완료';
+      await loadFiles();
     }
 
-    db.auth.onAuthStateChange((event, session) => {
+    db.auth.onAuthStateChange(event => {
       if (event === 'SIGNED_OUT') {
         window.location.href = 'index.html';
       }
     });
 
-    startWorkspace();
+    start();
   </script>
 </body>
 </html>
