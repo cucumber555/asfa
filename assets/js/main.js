@@ -122,9 +122,60 @@ logoutBtn.addEventListener('click', async () => {
 });
 
 // 로그인 상태 감지 및 새로고침 후 상태 복원
+
+async function syncAsfaProfile(user) {
+  if (!user) return;
+
+  const metadata = user.user_metadata || {};
+
+  const displayName =
+    metadata.full_name ||
+    metadata.name ||
+    user.email?.split('@')[0] ||
+    'ASFA 사용자';
+
+  const avatarUrl =
+    metadata.avatar_url ||
+    metadata.picture ||
+    null;
+
+  const { error } = await supabaseClient
+    .from('asfa_profiles')
+    .upsert(
+      {
+        user_id: user.id,
+        display_name: displayName,
+        avatar_url: avatarUrl,
+        updated_at: new Date().toISOString()
+      },
+      { onConflict: 'user_id' }
+    );
+
+  if (error) {
+    console.error('ASFA 프로필 저장 오류:', error);
+  }
+}
+
 supabaseClient.auth.onAuthStateChange((_event, session) => {
-  updateAccount(session?.user || null);
+  const user = session?.user || null;
+  updateAccount(user);
+
+  if (user) {
+    setTimeout(() => {
+      syncAsfaProfile(user);
+    }, 0);
+  }
 });
+
+supabaseClient.auth.getSession().then(({ data, error }) => {
+  if (error) {
+    console.error('로그인 상태 확인 오류:', error);
+    return;
+  }
+
+  updateAccount(data.session?.user || null);
+});
+
 
 
 
